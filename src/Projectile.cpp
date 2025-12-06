@@ -1,10 +1,12 @@
 #include "Projectile.hpp"
 
 void Projectile::update(float dt) {
+    // уменьшаем время жизни луча
     ttl -= dt;
 }
 
 void Projectile::draw(sf::RenderTarget& win) {
+    // рисуем прямоугольный луч между началом и концом
     sf::Vector2f dir = end - start;
     float length = std::sqrt(dir.x*dir.x + dir.y*dir.y);
     if (length <= 0.1f) return;

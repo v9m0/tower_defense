@@ -2,6 +2,7 @@
 
 
 Tower::Tower() {
+    // базовая форма башни без текстур
     shape.setSize({24,24});
     shape.setOrigin(12,12);
     shape.setFillColor(sf::Color::Cyan);
@@ -9,6 +10,7 @@ Tower::Tower() {
 
 
 void Tower::configure(TowerType t, float tileSize) {
+    // установка параметров под выбранный тип
     type = t;
     level = 1;
     totalUpgradeLevels = 0;
@@ -59,6 +61,7 @@ void Tower::configure(TowerType t, float tileSize) {
 
 
 void Tower::update(float dt) {
+    // таймер стрельбы и вспышки
     fireTimer -= dt;
     flashTimer = std::max(0.f, flashTimer - dt);
     shape.setPosition(pos);
@@ -71,6 +74,7 @@ void Tower::update(float dt) {
 
 
 void Tower::draw(sf::RenderTarget& win) {
+    // приоритет спрайтов над геометрией
     if (baseSprite.getTexture()) win.draw(baseSprite);
     else win.draw(shape);
     if (gunSprite.getTexture()) win.draw(gunSprite);
@@ -79,6 +83,7 @@ void Tower::draw(sf::RenderTarget& win) {
 
 
 void Tower::setBaseTexture(sf::Texture& tex, float tileSize) {
+    // масштаб основания под размер клетки
     baseSprite.setTexture(tex);
     baseSprite.setOrigin(tex.getSize().x * 0.5f, tex.getSize().y * 0.5f);
     float target = tileSize - 4.f;
@@ -89,6 +94,7 @@ void Tower::setBaseTexture(sf::Texture& tex, float tileSize) {
 
 
 void Tower::setGunTexture(sf::Texture& tex, float tileSize) {
+    // масштаб пушки под клетку
     gunSprite.setTexture(tex);
     gunSprite.setOrigin(tex.getSize().x * 0.5f, tex.getSize().y * 0.5f);
     float target = tileSize * 0.9f;
@@ -106,6 +112,7 @@ void Tower::setFlashTexture(sf::Texture& tex, TowerType towerType) {
 
 
 std::optional<Projectile> Tower::tryShoot(const std::vector<std::unique_ptr<Enemy>>& enemies) {
+    // выбираем ближайшую цель в радиусе
     if (fireTimer > 0.f) return std::nullopt;
     const Enemy* target = nullptr;
     float bestDist2 = range * range;
@@ -120,6 +127,7 @@ std::optional<Projectile> Tower::tryShoot(const std::vector<std::unique_ptr<Enem
     }
     if (!target) return std::nullopt;
 
+    // сброс таймера и подготовка луча
     fireTimer = fireCooldown;
     Projectile p;
     sf::Vector2f dir = target->pos - pos;
@@ -145,6 +153,7 @@ std::optional<Projectile> Tower::tryShoot(const std::vector<std::unique_ptr<Enem
         gunSprite.setRotation(angleDeg + 90.f);
     }
     if (flashSprite.getTexture()) {
+        // вспышка отображается короткое время на конце ствола
         flashTimer = 0.08f;
         flashSprite.setPosition(muzzlePos);
         flashSprite.setRotation(angleDeg + 90.f);

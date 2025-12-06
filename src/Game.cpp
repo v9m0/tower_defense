@@ -2,6 +2,7 @@
 
 
 Game::Game() {
+    // настройка окна, загрузка шрифтов и подготовка ui
     window.setFramerateLimit(60);
     font.loadFromFile("assets/ByteBounce.ttf");
     hud.init(font); menu.init(font); over.init(font); recUI.init(font); towerMenu.init(font); upgradeMenu.init(font); pauseUI.init(font);
@@ -35,6 +36,7 @@ Game::Game() {
     float gridHeight = level.tileSize * Level::GridSize;
     level.origin = { (viewSize.x - gridWidth) * 0.5f, (viewSize.y - gridHeight) * 0.5f };
 
+    // попытка загрузить карту с двух путей, иначе создать дефолт
     bool mapLoaded = level.loadFromFile("data/map.txt");
     if (!mapLoaded) {
         mapLoaded = level.loadFromFile("../data/map.txt");
@@ -58,6 +60,7 @@ Game::Game() {
 
 
 void Game::resetGame(){
+    // сброс врагов, башен, проектов и числовых параметров
     enemies.clear(); towers.clear(); projectiles.clear();
     selectedTower = nullptr;
     placementPadIndex = -1;
@@ -72,6 +75,7 @@ void Game::resetGame(){
 
 
 void Game::run(){
+    // главный цикл с опросом событий и обновлением состояния
     while (window.isOpen()) {
         handleEvents();
         float dt = clock.restart().asSeconds();
@@ -83,6 +87,7 @@ void Game::run(){
 
 
 void Game::handleEvents(){
+    // перебор событий в зависимости от текущего экрана
     sf::Event e;
     while (window.pollEvent(e)) {
         if (e.type == sf::Event::Closed) window.close();
@@ -150,10 +155,12 @@ void Game::handleEvents(){
 
 
 void Game::handleLeftClick(const sf::Vector2f& worldPos) {
+    // приоритетный клик по кнопке паузы
     if (hud.pauseButtonBounds().contains(worldPos)) {
         enterPause();
         return;
     }
+    // обработка нажатий внутри меню улучшений
     if (upgradeMenu.visible) {
         sf::Vector2f uiClick = worldToUI(worldPos);
         auto choice = upgradeMenu.handleClick(uiClick);
@@ -170,6 +177,7 @@ void Game::handleLeftClick(const sf::Vector2f& worldPos) {
         return;
     }
 
+    // обработка меню строительства
     if (towerMenu.visible) {
         sf::Vector2f uiClick = worldToUI(worldPos);
         auto choice = towerMenu.handleClick(uiClick);
@@ -214,6 +222,7 @@ void Game::handleLeftClick(const sf::Vector2f& worldPos) {
 
 
 void Game::openPlacementMenu(const sf::Vector2f& worldPos) {
+    // проверяем деньги, ближайшую площадку и наличие башни
     if (coins < 30) return;
     int idx = level.nearestPadIndex(worldPos);
     if (idx < 0) return;
@@ -234,6 +243,7 @@ void Game::openPlacementMenu(const sf::Vector2f& worldPos) {
 
 
 void Game::openUpgradeMenu(Tower& tower) {
+    // формируем список опций и размещаем панель в пределах экрана
     towerMenu.close();
     upgradeTarget = &tower;
     auto labels = buildUpgradeLabels(tower);
@@ -252,6 +262,7 @@ void Game::openUpgradeMenu(Tower& tower) {
 
 
 void Game::openBaseMenu() {
+    // одиночное меню для покупки здоровья базы
     towerMenu.close();
     upgradeTarget = nullptr;
     std::vector<std::string> opts;
@@ -276,6 +287,7 @@ void Game::openBaseMenu() {
 
 
 std::vector<std::string> Game::buildUpgradeLabels(const Tower& tower) const {
+    // текстовые подписи с ограничениями и возвратом за продажу
     std::vector<std::string> labels;
     std::string rateLabel = "Fire Rate -20 <coin>";
     std::string special;
@@ -290,7 +302,7 @@ std::vector<std::string> Game::buildUpgradeLabels(const Tower& tower) const {
             special = "Poison -20 <coin>";
             break;
     }
-    // Limit is 12 total levels including base (level 1 + 11 upgrades)
+    // лимит 12 уровней включая базовый (уровень 1 + 11 улучшений)
     if (tower.totalUpgradeLevels >= 11) {
         rateLabel += " [Limit]";
         special += " [Limit]";
@@ -306,6 +318,7 @@ std::vector<std::string> Game::buildUpgradeLabels(const Tower& tower) const {
 
 
 void Game::applyUpgradeChoice(UpgradeOption option) {
+    // обработка продажи или покупки улучшения
     if (!upgradeTarget) return;
     Tower& tower = *upgradeTarget;
     bool applied = false;
@@ -321,7 +334,7 @@ void Game::applyUpgradeChoice(UpgradeOption option) {
         return;
     }
 
-    // Total levels: base level 1 + upgrades; stop when displaying Lv12
+    // общий лимит уровней: база плюс апгрейды до отображаемого lv12
     if (tower.totalUpgradeLevels >= 11 || coins < towerUpgradeCost) {
         openUpgradeMenu(tower);
         return;
@@ -362,6 +375,7 @@ void Game::applyUpgradeChoice(UpgradeOption option) {
 
 
 void Game::handleBaseMenuSelection(int index) {
+    // пока единственный пункт отвечает за здоровье
     if (index == 0) {
         tryUpgradeBaseHp();
     }
@@ -370,6 +384,7 @@ void Game::handleBaseMenuSelection(int index) {
 
 
 void Game::applyLetterboxView(unsigned width, unsigned height) {
+    // пересчёт viewport для сохранения пропорций 16:9
     if (height == 0 || width == 0) return;
     const float baseWidth = 1280.f;
     const float baseHeight = 720.f;
@@ -419,6 +434,7 @@ void Game::applyLetterboxView(unsigned width, unsigned height) {
 
 
 void Game::placeTowerChoice(TowerType type) {
+    // проверка наличия площадки и средств для установки башни
     if (placementPadIndex < 0) return;
     if (coins < 30) {
         towerMenu.close();
@@ -461,6 +477,7 @@ void Game::placeTowerChoice(TowerType type) {
 
 
 void Game::checkEnemyDefeat(Enemy& enemy){
+    // разовая награда за уничтожение
     if (!enemy.alive && !enemy.rewardGranted) {
         enemy.rewardGranted = true;
         score += 10;
@@ -470,6 +487,7 @@ void Game::checkEnemyDefeat(Enemy& enemy){
 
 
 Enemy* Game::findEnemyNear(const sf::Vector2f& pos, float radius) {
+    // простой поиск ближайшего живого врага в радиусе
     float r2 = radius * radius;
     for (auto& e : enemies) {
         if (!e->alive) continue;
@@ -482,6 +500,7 @@ Enemy* Game::findEnemyNear(const sf::Vector2f& pos, float radius) {
 
 
 void Game::handleBeamDamage(const Projectile& projectile, Enemy& target){
+    // различная обработка эффектов по типу башни
     if (projectile.type == TowerType::Normal) {
         target.takeDamage(projectile.damage);
         checkEnemyDefeat(target);
@@ -498,6 +517,7 @@ void Game::handleBeamDamage(const Projectile& projectile, Enemy& target){
 
 
 void Game::processBeamHit(const Projectile& projectile) {
+    // попытка применить урон по цели возле конца луча
     Enemy* target = findEnemyNear(projectile.end, 22.f);
     if (!target) return;
     handleBeamDamage(projectile, *target);
@@ -505,6 +525,7 @@ void Game::processBeamHit(const Projectile& projectile) {
 
 
 void Game::tryUpgradeBaseHp(){
+    // улучшение здоровья за фиксированную цену
     if (coins<30) return;
     base.maxHp += 20.f; base.hp = base.maxHp; coins -= 30;
     hud.update(score, coins, base.hp, base.maxHp);
@@ -512,8 +533,10 @@ void Game::tryUpgradeBaseHp(){
 
 
 void Game::update(float dt){
+    // актуально только в боевом состоянии
     if (state!=GameState::Playing) return;
 
+    // спавн волны врагов с ростом сложности
     spawnTimer -= dt;
     if (spawnTimer<=0.f) {
         int spawnCount = 1 + waveCount / 64;
@@ -559,6 +582,7 @@ void Game::update(float dt){
         spawnTimer = spawnEvery;
     }
 
+    // обновление башен и генерация снарядов
     for (auto& t : towers) {
         t->update(dt);
         auto p = t->tryShoot(enemies);
@@ -569,6 +593,7 @@ void Game::update(float dt){
         }
     }
 
+    // движение врагов и проверка урона базе
     for (auto& e : enemies) {
         e->update(dt);
         if (e->alive && e->path.empty()) {
@@ -600,6 +625,7 @@ void Game::update(float dt){
 
 
 void Game::draw(){
+    // создание буфера если нужен пиксельный upscale
     if (!frameBufferReady) {
         frameBufferReady = frameBuffer.create(static_cast<unsigned>(worldView.getSize().x),
                                               static_cast<unsigned>(worldView.getSize().y));
@@ -635,6 +661,7 @@ void Game::draw(){
     worldTarget->setView(worldTargetView);
     worldTarget->clear(sf::Color(30,30,40));
 
+    // базовый слой: уровень, база, башни, враги, снаряды
     drawLevel(*worldTarget);
     base.draw(*worldTarget);
     for (auto& t: towers) {
@@ -694,6 +721,7 @@ void Game::draw(){
         window.setView(worldView);
     }
 
+    // слой интерфейса поверх игровой сцены
     window.setView(uiView);
     hud.draw(window);
     drawHelp(window);
@@ -707,6 +735,7 @@ void Game::draw(){
 
 
 void Game::drawLevel(sf::RenderTarget& target){
+    // упрощённый рендер дороги если карта не загружена
     if (!level.hasGrid) {
         sf::Vector2f center = worldView.getCenter();
         float roadWidth = 600.f;
@@ -724,6 +753,7 @@ void Game::drawLevel(sf::RenderTarget& target){
         return;
     }
 
+    // отрисовка клеточной карты по символам
     sf::RectangleShape tile({level.tileSize - 2.f, level.tileSize - 2.f});
     tile.setOutlineThickness(0.f);
     for (int y = 0; y < Level::GridSize; ++y) {
@@ -743,6 +773,7 @@ void Game::drawLevel(sf::RenderTarget& target){
 
 
 void Game::drawTowerLevels(sf::RenderTarget& target){
+    // вывод уровня апгрейдов над каждой башней
     sf::Font f = font;
     for (auto& t : towers) {
         int displayLevel = std::min(12, t->totalUpgradeLevels + 1);
@@ -756,6 +787,7 @@ void Game::drawTowerLevels(sf::RenderTarget& target){
 
 
 void Game::drawSelection(sf::RenderTarget& target, const Tower& tower) {
+    // подсветка выбора по радиусу клетки
     float radius = level.hasGrid ? level.tileSize * 0.5f : 20.f;
     sf::CircleShape highlight(radius);
     highlight.setOrigin(radius, radius);
@@ -772,6 +804,7 @@ void Game::drawHelp(sf::RenderTarget&) {
 
 
 void Game::enterPause() {
+    // закрываем окна выбора и переводим состояние в паузу
     if (state != GameState::Playing) return;
     towerMenu.close();
     upgradeMenu.close();
@@ -782,6 +815,7 @@ void Game::enterPause() {
 
 
 void Game::resumeFromPause() {
+    // возврат к обычному обновлению
     if (state == GameState::Paused) {
         state = GameState::Playing;
     }
@@ -789,6 +823,7 @@ void Game::resumeFromPause() {
 
 
 void Game::exitToMenuFromPause() {
+    // очистка выбора и выход в меню
     towerMenu.close();
     upgradeMenu.close();
     selectedTower = nullptr;
@@ -798,6 +833,7 @@ void Game::exitToMenuFromPause() {
 
 
 sf::Vector2f Game::worldToUI(const sf::Vector2f& world) const {
+    // перевод координат с учётом разных вью
     sf::Vector2i pixel = window.mapCoordsToPixel(world, worldView);
     return window.mapPixelToCoords(pixel, uiView);
 }

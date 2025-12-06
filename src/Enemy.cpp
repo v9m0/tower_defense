@@ -2,6 +2,7 @@
 
 
 Enemy::Enemy() {
+    // базовая заготовка круга для fallback отрисовки
     shape.setRadius(12.f);
     shape.setOrigin(12,12);
     shape.setFillColor(sf::Color::Red);
@@ -9,6 +10,7 @@ Enemy::Enemy() {
 
 
 void Enemy::setTexture(sf::Texture& tex, float targetSize) {
+    // назначаем спрайт и масштабируем под нужный размер
     sprite.setTexture(tex);
     sprite.setOrigin(tex.getSize().x * 0.5f, tex.getSize().y * 0.5f);
     float maxDim = static_cast<float>(std::max(tex.getSize().x, tex.getSize().y));
@@ -19,6 +21,7 @@ void Enemy::setTexture(sf::Texture& tex, float targetSize) {
 
 
 void Enemy::makeBoss() {
+    // переводим врага в формат босса с треугольной формой
     isBoss = true;
     sf::CircleShape tri;
     tri.setPointCount(3);
@@ -30,9 +33,11 @@ void Enemy::makeBoss() {
 
 
 void Enemy::update(float dt) {
+    // пропускаем обновление если враг уже убит
     if (!alive) return;
     updateStatus(dt);
     const float epsilon = 4.f;
+    // движение по пути до базы
     while (!path.empty()) {
         sf::Vector2f target = path.front();
         sf::Vector2f dir = target - pos;
@@ -56,6 +61,7 @@ void Enemy::update(float dt) {
 
 
 void Enemy::draw(sf::RenderTarget& win) {
+    // приоритетно выводим спрайт, иначе фигуру
     if (!alive) return;
     if (sprite.getTexture()) {
         win.draw(sprite);
@@ -66,6 +72,7 @@ void Enemy::draw(sf::RenderTarget& win) {
 
 
 void Enemy::takeDamage(float amount) {
+    // наносим урон с учётом множителей и помечаем смерть
     hp -= amount * damageTakenMultiplier;
     if (hp <= 0.f) {
         hp = 0.f;
@@ -75,12 +82,14 @@ void Enemy::takeDamage(float amount) {
 
 
 void Enemy::applySlow(float multiplier, float duration) {
+    // выбираем минимальный множитель и максимальную длительность
     currentSlowMultiplier = std::min(currentSlowMultiplier, multiplier);
     slowTimer = std::max(slowTimer, duration);
 }
 
 
 void Enemy::applyCryoHit(float multiplier, float slowDuration, float freezeDuration) {
+    // стаки холодных попаданий приводят к заморозке
     constexpr int stacksForFreeze = 4;
     if (frozen) {
         freezeTimer = std::max(freezeTimer, freezeDuration);
@@ -103,6 +112,7 @@ void Enemy::applyCryoHit(float multiplier, float slowDuration, float freezeDurat
 
 
 void Enemy::triggerFreeze(float duration) {
+    // фриз останавливает движение и удваивает получаемый урон
     frozen = true;
     freezeTimer = duration;
     damageTakenMultiplier = 2.f;
@@ -111,6 +121,7 @@ void Enemy::triggerFreeze(float duration) {
 
 
 void Enemy::applyPoison(float totalDamage, float duration) {
+    // задаём продолжительность и дпс яда
     if (duration <= 0.f) return;
     poisonTimer = duration;
     poisonDps = totalDamage / duration;
@@ -118,6 +129,7 @@ void Enemy::applyPoison(float totalDamage, float duration) {
 
 
 void Enemy::updateStatus(float dt) {
+    // обновление всех активных эффектов
     if (poisonTimer > 0.f) {
         float dmg = poisonDps * dt;
         takeDamage(dmg);
@@ -159,6 +171,7 @@ void Enemy::updateStatus(float dt) {
     else if (currentSlowMultiplier < 1.f) color = sf::Color(220, 220, 255);
     else color = sf::Color::White;
 
+    // смена цвета чтобы визуально показать эффект
     if (sprite.getTexture()) {
         sprite.setColor(color);
     } else {

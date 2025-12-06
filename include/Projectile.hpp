@@ -4,6 +4,7 @@
 #include "Types.hpp"
 
 
+// снаряд-луч от башни к врагу
 struct Projectile : public Entity {
     sf::Vector2f start{};
     sf::Vector2f end{};
@@ -18,9 +19,12 @@ struct Projectile : public Entity {
     float poisonDuration{0.f};
     float poisonTotalDamage{0.f};
 
+    // уменьшение времени жизни
     void update(float dt) override;
 
+    // рисование луча между началом и концом
     void draw(sf::RenderTarget& win) override;
 
+    // проверка завершения существования
     bool dead() const;
 };

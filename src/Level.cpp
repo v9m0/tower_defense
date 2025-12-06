@@ -2,6 +2,7 @@
 
 
 bool Level::loadFromFile(const std::string& file) {
+    // читаем строки карты и проверяем размеры
     std::ifstream in(file);
     if (!in) return false;
 
@@ -22,6 +23,7 @@ bool Level::loadFromFile(const std::string& file) {
     std::optional<sf::Vector2i> spawnCell;
     std::optional<sf::Vector2i> baseCell;
 
+    // разбираем символы сетки и ищем спавн и базу
     for (int y = 0; y < GridSize; ++y) {
         grid[y] = lines[y];
         for (int x = 0; x < GridSize; ++x) {
@@ -44,6 +46,7 @@ bool Level::loadFromFile(const std::string& file) {
         return sf::Vector2i{idx % GridSize, idx / GridSize};
     };
 
+    // bfs по сетке чтобы восстановить путь
     std::queue<sf::Vector2i> q;
     std::vector<int> parent(GridSize * GridSize, -1);
     std::vector<bool> visited(GridSize * GridSize, false);
@@ -97,6 +100,7 @@ sf::Vector2f Level::cellCenter(int x, int y) const {
 
 
 bool Level::isBuildAllowed(const sf::Vector2f& p) const {
+    // проверяем, близко ли к разрешённой площадке
     for (auto& pad : pads) {
         if (std::hypot(pad.pos.x - p.x, pad.pos.y - p.y) < 18) return true;
     }
@@ -105,6 +109,7 @@ bool Level::isBuildAllowed(const sf::Vector2f& p) const {
 
 
 int Level::nearestPadIndex(const sf::Vector2f& p) const {
+    // поиск индекса ближайшей площадки для меню
     int idx=-1; float best=1e9f;
     for (size_t i=0;i<pads.size();++i) {
         float d=std::hypot(pads[i].pos.x-p.x,pads[i].pos.y-p.y);

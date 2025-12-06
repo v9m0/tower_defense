@@ -10,6 +10,7 @@
 #include <cmath>
 
 
+// башня защищающая базу
 struct Tower : public Entity {
     TowerType type{TowerType::Normal};
     float range{140.f};
@@ -36,16 +37,21 @@ struct Tower : public Entity {
 
     Tower();
 
+    // настройка параметров по типу и размеру клетки
     void configure(TowerType t, float tileSize);
 
     void update(float dt) override;
     void draw(sf::RenderTarget& win) override;
 
+    // назначение текстуры основания
     void setBaseTexture(sf::Texture& tex, float tileSize);
 
+    // назначение текстуры пушки
     void setGunTexture(sf::Texture& tex, float tileSize);
 
+    // назначение вспышки выстрела для обычной башни
     void setFlashTexture(sf::Texture& tex, TowerType towerType);
 
+    // попытка выстрелить по ближайшему врагу
     std::optional<Projectile> tryShoot(const std::vector<std::unique_ptr<Enemy>>& enemies);
 };

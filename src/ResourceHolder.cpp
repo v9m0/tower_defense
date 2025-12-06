@@ -2,8 +2,10 @@
 
 
 sf::Texture& ResourceHolder::getTexture(const std::string& path) {
+    // возвращаем уже загруженную текстуру если есть
     auto it = textures.find(path);
     if (it != textures.end()) return *it->second;
+    // пробуем загрузить, иначе создаём магенту 2x2
     auto tex = std::make_unique<sf::Texture>();
     if (!tex->loadFromFile(path)) {
         tex->create(2,2);
@@ -19,6 +21,7 @@ sf::Texture& ResourceHolder::getTexture(const std::string& path) {
 
 
 sf::Font& ResourceHolder::getFont(const std::string& path) {
+    // ленивое получение шрифта
     auto it = fonts.find(path);
     if (it != fonts.end()) return *it->second;
     auto f = std::make_unique<sf::Font>();

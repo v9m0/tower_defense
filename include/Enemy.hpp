@@ -4,6 +4,7 @@
 #include <cmath>
 #include <deque>
 
+// враг двигающийся по пути к базе
 struct Enemy : public Entity {
     float baseSpeed{60.f};
     float hp{10.f};
@@ -29,24 +30,31 @@ struct Enemy : public Entity {
 
     Enemy();
 
+    // установка спрайта и масштабирование под клетку
     void setTexture(sf::Texture& tex, float targetSize);
 
+    // перевод врага в статус босса
     void makeBoss();
 
     void update(float dt) override;
 
     void draw(sf::RenderTarget& win) override;
 
+    // получение урона с учётом модификаторов
     void takeDamage(float amount);
 
+    // наложение замедления
     void applySlow(float multiplier, float duration);
 
     // станлок
     void applyCryoHit(float multiplier, float slowDuration, float freezeDuration);
 
+    // мгновенное замораживание
     void triggerFreeze(float duration);
 
+    // отложенный урон ядом
     void applyPoison(float totalDamage, float duration);
 
+    // обновление таймеров эффектов
     void updateStatus(float dt);
 };

@@ -10,16 +10,19 @@
 #include <vector>
 
 
+// площадка для постройки башен
 struct BuildPad {
     sf::Vector2f pos;
 };
 
 
+// путь врагов по клеткам
 struct Path {
     std::vector<sf::Vector2f> waypoints;
 };
 
 
+// данные уровня с сеткой
 struct Level {
     static constexpr int GridSize = 20;
 
@@ -35,11 +38,15 @@ struct Level {
     sf::Vector2f basePos{740,300};
     sf::Vector2f spawnPos{60,300};
 
+    // загрузить сетку уровня из файла
     bool loadFromFile(const std::string& file);
 
+    // получить центр клетки в мировых координатах
     sf::Vector2f cellCenter(int x, int y) const;
 
+    // проверка, разрешено ли строить по позиции
     bool isBuildAllowed(const sf::Vector2f& p) const;
 
+    // индекс ближайшей площадки под башню
     int nearestPadIndex(const sf::Vector2f& p) const;
 };

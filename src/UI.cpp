@@ -4,12 +4,14 @@
 
 
 void snapTextPosition(sf::Text& txt) {
+    // защёлкиваем координаты к целым пикселям чтобы не мылить шрифт
     sf::Vector2f pos = txt.getPosition();
     txt.setPosition(std::round(pos.x), std::round(pos.y));
 }
 
 
 void centerText(sf::Text& txt, float x, float y) {
+    // меняем origin чтобы центр совпал с переданной точкой
     sf::FloatRect bounds = txt.getLocalBounds();
     txt.setOrigin(bounds.left + bounds.width * 0.5f, bounds.top + bounds.height * 0.5f);
     txt.setPosition(x, y);
@@ -18,6 +20,7 @@ void centerText(sf::Text& txt, float x, float y) {
 
 
 void HUD::init(const sf::Font& f) {
+    // копируем шрифт и задаём размеры текста
     font = f;
     scoreText.setFont(font);
     coinsText.setFont(font);
@@ -37,12 +40,14 @@ void HUD::init(const sf::Font& f) {
 
 
 void HUD::setCoinTexture(sf::Texture& tex) {
+    // сохраняем текстуру монетки для отображения валюты
     coinSprite.setTexture(tex);
     coinSprite.setOrigin(tex.getSize().x * 0.5f, tex.getSize().y * 0.5f);
 }
 
 
 void HUD::setPauseTexture(sf::Texture& tex) {
+    // спрайт иконки паузы и её масштаб
     pauseIcon.setTexture(tex);
     pauseIcon.setOrigin(tex.getSize().x * 0.5f, tex.getSize().y * 0.5f);
     refreshPauseIcon();
@@ -50,6 +55,7 @@ void HUD::setPauseTexture(sf::Texture& tex) {
 
 
 void HUD::setLayout(const sf::Vector2f& viewSize) {
+    // рассчитываем полосы интерфейса и кнопку паузы
     const float topHeight = 70.f;
     const float bottomHeight = 90.f;
     topBar.setSize({viewSize.x, topHeight});
@@ -65,6 +71,7 @@ void HUD::setLayout(const sf::Vector2f& viewSize) {
 
 
 void HUD::update(int score, int coins, float baseHp, float maxHp) {
+    // обновляем строки текста и их позицию
     scoreText.setString("Score: " + std::to_string(score));
     coinsText.setString(std::to_string(coins));
     baseHpText.setString("Base HP: " + std::to_string(static_cast<int>(baseHp)) + "/" + std::to_string(static_cast<int>(maxHp)));
@@ -86,6 +93,7 @@ void HUD::update(int score, int coins, float baseHp, float maxHp) {
 
 
 void HUD::draw(sf::RenderTarget& win) {
+    // выводим панели, текст и кнопки
     win.draw(topBar);
     win.draw(bottomBar);
     win.draw(scoreText);
@@ -101,6 +109,7 @@ sf::FloatRect HUD::topBarBounds() const { return topBar.getGlobalBounds(); }
 sf::FloatRect HUD::pauseButtonBounds() const { return pauseButton.getGlobalBounds(); }
 
 void HUD::positionLeftCentered(sf::Text& txt, const sf::Vector2f& anchor) {
+    // якорим текст слева и центрируем по вертикали
     auto bounds = txt.getLocalBounds();
     txt.setOrigin(bounds.left, bounds.top + bounds.height * 0.5f);
     txt.setPosition(anchor);
@@ -108,6 +117,7 @@ void HUD::positionLeftCentered(sf::Text& txt, const sf::Vector2f& anchor) {
 }
 
 void HUD::positionRightCentered(sf::Text& txt, const sf::Vector2f& anchor) {
+    // якорим текст справа и центрируем по вертикали
     auto bounds = txt.getLocalBounds();
     txt.setOrigin(bounds.left + bounds.width, bounds.top + bounds.height * 0.5f);
     txt.setPosition(anchor);
@@ -115,6 +125,7 @@ void HUD::positionRightCentered(sf::Text& txt, const sf::Vector2f& anchor) {
 }
 
 void HUD::refreshCoinScale(float targetHeight) {
+    // масштабируем спрайт монетки под высоту текста
     if (!coinSprite.getTexture()) return;
     auto texSize = coinSprite.getTexture()->getSize();
     if (texSize.y == 0) return;
@@ -123,6 +134,7 @@ void HUD::refreshCoinScale(float targetHeight) {
 }
 
 void HUD::refreshPauseIcon() {
+    // обновляем иконку паузы при изменении размеров
     if (!pauseIcon.getTexture()) return;
     sf::Vector2f size = pauseButton.getSize();
     auto texSize = pauseIcon.getTexture()->getSize();
@@ -137,6 +149,7 @@ void HUD::refreshPauseIcon() {
 
 
 void MenuUI::init(const sf::Font& f) {
+    // базовые подписи и размеры главного меню
     font = f;
     title.setFont(font); start.setFont(font); records.setFont(font); quit.setFont(font);
     title.setString("Tower Defense"); title.setCharacterSize(56);
@@ -147,6 +160,7 @@ void MenuUI::init(const sf::Font& f) {
 
 
 void MenuUI::layout(const sf::Vector2f& viewSize) {
+    // рассчитываем позицию кнопок в центре экрана
     float centerX = viewSize.x * 0.5f;
     float centerY = viewSize.y * 0.5f;
     centerText(title, centerX, centerY - 160.f);
@@ -171,6 +185,7 @@ void MenuUI::layout(const sf::Vector2f& viewSize) {
 
 
 void MenuUI::draw(sf::RenderTarget& w) {
+    // рисуем фон кнопок и их текст
     w.draw(title);
     drawButton(w, start);
     drawButton(w, records);
@@ -182,6 +197,7 @@ void MenuUI::draw(sf::RenderTarget& w) {
 
 
 std::optional<MenuAction> MenuUI::handleClick(const sf::Vector2f& pos) const {
+    // определяем какая кнопка нажата
     if (buttonBounds(start).contains(pos)) return MenuAction::Start;
     if (buttonBounds(records).contains(pos)) return MenuAction::Records;
     if (buttonBounds(quit).contains(pos)) return MenuAction::Quit;
@@ -189,6 +205,7 @@ std::optional<MenuAction> MenuUI::handleClick(const sf::Vector2f& pos) const {
 }
 
 sf::FloatRect MenuUI::buttonBounds(const sf::Text& txt) const {
+    // размеры кнопки с отступами вокруг текста
     sf::FloatRect textBounds = txt.getGlobalBounds();
     float left = textBounds.left - (buttonWidth - textBounds.width) * 0.5f;
     float top = textBounds.top - (buttonHeight - textBounds.height) * 0.5f;
@@ -197,6 +214,7 @@ sf::FloatRect MenuUI::buttonBounds(const sf::Text& txt) const {
 
 
 void MenuUI::drawButton(sf::RenderTarget& w, const sf::Text& txt) const {
+    // рисуем прямоугольник кнопки с рамкой
     sf::FloatRect r = buttonBounds(txt);
     sf::RectangleShape box;
     box.setPosition(r.left, r.top);
@@ -209,6 +227,7 @@ void MenuUI::drawButton(sf::RenderTarget& w, const sf::Text& txt) const {
 
 
 void GameOverUI::init(const sf::Font& f) {
+    // заголовок и кнопка возврата в меню
     font = f; title.setFont(font); back.setFont(font);
     title.setString("Game Over"); title.setCharacterSize(56);
     back.setString("Main Menu"); back.setCharacterSize(32);
@@ -219,6 +238,7 @@ void GameOverUI::init(const sf::Font& f) {
 
 
 void GameOverUI::layout(const sf::Vector2f& viewSize) {
+    // центрирование надписи и кнопки
     float centerX = viewSize.x * 0.5f;
     float centerY = viewSize.y * 0.5f;
     centerText(title, centerX, centerY - 60.f);
@@ -236,11 +256,13 @@ void GameOverUI::layout(const sf::Vector2f& viewSize) {
 
 
 bool GameOverUI::handleClick(const sf::Vector2f& pos) const {
+    // проверяем, попал ли клик по кнопке
     return backButton.getGlobalBounds().contains(pos);
 }
 
 
 void GameOverUI::draw(sf::RenderTarget& w) {
+    // отрисовка заголовка и кнопки
     w.draw(title);
     w.draw(backButton);
     w.draw(back);
@@ -248,7 +270,8 @@ void GameOverUI::draw(sf::RenderTarget& w) {
 
 
 void RecordsUI::init(const sf::Font& f) {
-    font=f; title.setFont(font); title.setString("Last 5 records"); title.setCharacterSize(44);
+    // заготовка заголовка и кнопки назад
+    font=f; title.setFont(font); title.setString("Records"); title.setCharacterSize(44);
     backLabel.setFont(font);
     backLabel.setString("Back");
     backLabel.setCharacterSize(32);
@@ -259,6 +282,7 @@ void RecordsUI::init(const sf::Font& f) {
 
 
 void RecordsUI::setRecords(const std::vector<int>& r) {
+    // генерируем пять строк таблицы
     lines.clear();
     std::vector<int> display = r;
     if (display.size() < 5) display.resize(5, 0);
@@ -272,6 +296,7 @@ void RecordsUI::setRecords(const std::vector<int>& r) {
 
 
 void RecordsUI::layout(const sf::Vector2f& viewSize) {
+    // центрируем список и кнопку в окне
     float centerX = viewSize.x * 0.5f;
     centerText(title, centerX, viewSize.y * 0.3f);
     float startY = viewSize.y * 0.4f;
@@ -292,6 +317,7 @@ void RecordsUI::layout(const sf::Vector2f& viewSize) {
 
 
 void RecordsUI::draw(sf::RenderTarget& w) {
+    // вывод заголовка, строк и кнопки
     w.draw(title);
     for(auto& l:lines) w.draw(l);
     w.draw(backButton);
@@ -300,11 +326,13 @@ void RecordsUI::draw(sf::RenderTarget& w) {
 
 
 bool RecordsUI::handleClick(const sf::Vector2f& pos) const {
+    // клик по кнопке назад
     return backButton.getGlobalBounds().contains(pos);
 }
 
 
 void PauseUI::init(const sf::Font& f) {
+    // заголовок паузы и две кнопки
     font = f;
     title.setFont(font);
     title.setString("Paused");
@@ -326,6 +354,7 @@ void PauseUI::init(const sf::Font& f) {
 
 
 void PauseUI::layout(const sf::Vector2f& viewSize) {
+    // размещаем элементы в центре экрана
     float centerX = viewSize.x * 0.5f;
     float centerY = viewSize.y * 0.5f;
     centerText(title, centerX, centerY - 100.f);
@@ -335,6 +364,7 @@ void PauseUI::layout(const sf::Vector2f& viewSize) {
 
 
 std::optional<PauseAction> PauseUI::handleClick(const sf::Vector2f& pos) const {
+    // возвращаем действие если клик попал по кнопке
     if (resumeButton.getGlobalBounds().contains(pos)) return PauseAction::Resume;
     if (menuButton.getGlobalBounds().contains(pos)) return PauseAction::Menu;
     return std::nullopt;
@@ -342,6 +372,7 @@ std::optional<PauseAction> PauseUI::handleClick(const sf::Vector2f& pos) const {
 
 
 void PauseUI::draw(sf::RenderTarget& w) {
+    // рисуем заголовок и обе кнопки
     w.draw(title);
     w.draw(resumeButton);
     w.draw(resumeLabel);
@@ -350,6 +381,7 @@ void PauseUI::draw(sf::RenderTarget& w) {
 }
 
 void PauseUI::configureButton(sf::RectangleShape& button, sf::Text& label, const sf::Vector2f& pos, bool updateReference) {
+    // единый расчёт размеров и положения кнопок паузы
     static sf::Vector2f referenceSize(0.f, 0.f);
     sf::FloatRect bounds = label.getLocalBounds();
     sf::Vector2f size(bounds.width + 120.f, bounds.height + 40.f);
@@ -367,6 +399,7 @@ void PauseUI::configureButton(sf::RectangleShape& button, sf::Text& label, const
 
 
 void TowerSelectionUI::init(const sf::Font& f) {
+    // три кнопки выбора типа башни
     font = f;
     buttons.assign(3, sf::RectangleShape(sf::Vector2f(0.f, 0.f)));
     labels.assign(3, sf::Text());
@@ -397,6 +430,7 @@ void TowerSelectionUI::init(const sf::Font& f) {
 
 
 void TowerSelectionUI::open(const sf::Vector2f& worldPos, float tileSize) {
+    // масштабируем панель и кнопки под размер клетки
     position = worldPos;
     panel.setSize({tileSize * buttons.size() + 20.f * (buttons.size() + 1), tileSize + 40.f});
     panel.setPosition(position);
@@ -415,6 +449,7 @@ void TowerSelectionUI::close() { visible = false; }
 
 
 std::optional<TowerType> TowerSelectionUI::handleClick(const sf::Vector2f& worldPos) {
+    // проверяем попадание клика по кнопке, иначе скрываем
     if (!visible) return std::nullopt;
     for (std::size_t i = 0; i < buttons.size(); ++i) {
         if (buttons[i].getGlobalBounds().contains(worldPos)) {
@@ -430,6 +465,7 @@ std::optional<TowerType> TowerSelectionUI::handleClick(const sf::Vector2f& world
 
 
 void TowerSelectionUI::draw(sf::RenderTarget& w) {
+    // вывод панели и подписей типов башен
     if (!visible) return;
     w.draw(panel);
     for (std::size_t i = 0; i < buttons.size(); ++i) {
@@ -440,6 +476,7 @@ void TowerSelectionUI::draw(sf::RenderTarget& w) {
 
 
 void TowerUpgradeUI::init(const sf::Font& f) {
+    // начальные размеры и стили панели улучшений
     font = f;
     panel.setSize({240.f, 120.f});
     panel.setFillColor(sf::Color(25, 25, 35, 230));
@@ -452,6 +489,7 @@ void TowerUpgradeUI::init(const sf::Font& f) {
 
 
 void TowerUpgradeUI::open(const sf::Vector2f& worldPos, float tileSize, const std::vector<std::string>& options) {
+    // создаём кнопки по переданным опциям и подгоняем размер панели
     buttons.resize(options.size());
     labels.resize(options.size());
     showCoin.assign(options.size(), false);
@@ -498,6 +536,7 @@ void TowerUpgradeUI::close() { visible = false; }
 
 
 std::optional<int> TowerUpgradeUI::handleClick(const sf::Vector2f& worldPos) {
+    // ищем индекс кнопки по клику
     if (!visible) return std::nullopt;
     for (int i = 0; i < static_cast<int>(buttons.size()); ++i) {
         if (buttons[i].getGlobalBounds().contains(worldPos)) {
@@ -524,6 +563,7 @@ void TowerUpgradeUI::draw(sf::RenderTarget& w) {
 
 
 void TowerUpgradeUI::setCoinTexture(sf::Texture& tex, float targetHeight) {
+    // сохраняем спрайт монетки и нужную высоту для масштабирования
     coinIcon.setTexture(tex);
     coinIcon.setOrigin(tex.getSize().x * 0.5f, tex.getSize().y * 0.5f);
     iconTargetHeight = targetHeight;
@@ -532,6 +572,7 @@ void TowerUpgradeUI::setCoinTexture(sf::Texture& tex, float targetHeight) {
 
 
 void TowerUpgradeUI::drawCoinIcon(sf::RenderTarget& w, const sf::Text& label) {
+    // рисуем монетку после текста опции
     sf::FloatRect bounds = label.getGlobalBounds();
     sf::Sprite icon = coinIcon;
     icon.setPosition(bounds.left + bounds.width + 6.f, bounds.top + bounds.height * 0.5f);
@@ -539,6 +580,7 @@ void TowerUpgradeUI::drawCoinIcon(sf::RenderTarget& w, const sf::Text& label) {
 }
 
 void TowerUpgradeUI::refreshIconScale() {
+    // масштабируем монету под нужную высоту
     if (!coinIcon.getTexture()) return;
     auto sz = coinIcon.getTexture()->getSize();
     if (sz.y == 0) return;
@@ -547,6 +589,7 @@ void TowerUpgradeUI::refreshIconScale() {
 }
 
 void TowerUpgradeUI::positionLabel(sf::Text& label, const sf::RectangleShape& button) {
+    // выравниваем текст по центру кнопки
     auto bounds = label.getLocalBounds();
     label.setOrigin(bounds.left + bounds.width * 0.5f, bounds.top + bounds.height * 0.5f);
     label.setPosition(button.getPosition().x + button.getSize().x * 0.5f,

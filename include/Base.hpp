@@ -1,6 +1,7 @@
 #pragma once
 #include "Entity.hpp"
 
+// база игрока принимающая урон
 struct Base : public Entity {
     float hp{1000.f};
     float maxHp{1000.f};
