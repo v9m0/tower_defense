@@ -341,7 +341,10 @@ void Game::applyUpgradeChoice(UpgradeOption option) {
     }
 
     if (option == UpgradeOption::Rate) {
-        tower.fireCooldown = std::max(0.02f, tower.fireCooldown - 0.05f);
+        // умножаем перезарядку на коэффициент и не опускаем ниже минимума
+        const float rateMultiplier = 0.8f;
+        const float minCooldown = 0.02f;
+        tower.fireCooldown = std::max(minCooldown, tower.fireCooldown * rateMultiplier);
         tower.rateUpgradeLevel++;
         applied = true;
     } else {
